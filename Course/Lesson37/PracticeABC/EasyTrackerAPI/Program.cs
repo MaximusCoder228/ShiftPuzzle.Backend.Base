@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer();
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -40,6 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 }); 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
  
 app.UseSwagger();
@@ -49,7 +53,7 @@ app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "EasyTaskTra
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
-
+app.UseAuthentication();
 app.MapControllers();
 
 app.Run();

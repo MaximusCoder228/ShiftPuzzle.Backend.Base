@@ -1,26 +1,17 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;   
 
 public class AccountController : ControllerBase
 {
-    private readonly IAccountManager _accountManager;
+    private readonly UserManagerL<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
-    public AccountController(IAccountManager accountManager)
+    public AccountController(UserManagerL<IdentityUser> userManager, SignInManager<IdentityUser> _signInManager)
     {
-        _accountManager = accountManager;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }   
-
-    [HttpGet("/api/account/getall")]
-    public IActionResult GetAll()
-    {
-        return Ok(_accountManager.GetAccounts());
-    }
-
-    [HttpGet("/api/account/get/{name}")]
-    public IActionResult Get(string name)
-    {
-        return Ok(_accountManager.GetAccount(name));
-    }
 
     [HttpPost("/api/account/register")]
     public IActionResult Create([FromBody] User account)
@@ -36,10 +27,31 @@ public class AccountController : ControllerBase
         return Ok(response);
     }   
 
-    [HttpPost("api/account/verify")]    
-    public IActionResult Verify([FromBody] User account)
+    [HttpPost("api/account/login")]    
+    public IActionResult Login([FromBody] User account)
     {
-        return Ok(_accountManager.VerifyAccount(account));
+        var result = _signInManager.PasswordSignIn(account.Name, account.Password, false, false).Result;
+        if (result.Succeeded)
+        {
+            return Ok();
+        }
+        else
+        {
+            return BadRequest();
+        }
     }   
+
+    [HttpGet("/api/account/logout")]
+    public IActionResult Logout()
+    {
+        _signInManager.SignOutAsync().Wait();
+        return Ok();
+    }
+
+    [HttpGet("/api/account")]
+    public List<User> GetAccounts()
+    {
+        return _userManager.Users.Select(uint => new User { nameof = u.UserName, Email = u.Email }).ToList();
+    }
 
 } 
